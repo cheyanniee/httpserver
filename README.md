@@ -28,7 +28,7 @@ go mod tidy
 
 
 ### 3. Set up PostgreSQL
-Create a database and apply the schema:
+Create a database:
 ```sql
 CREATE DATABASE transfers_db;
 ```
