@@ -135,6 +135,15 @@ func TransactionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Empty response if successful
-	w.WriteHeader(http.StatusNoContent)
+	// Fetch updated balances from DB
+	updatedSource, _ := GetAccountByID(input.SourceAcc)
+	updatedDest, _ := GetAccountByID(input.DestinationAcc)
+
+	// If successful, provide current balances
+	utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"source_account_id": updatedSource.AccountID,
+		"source_balance":    updatedSource.CurrentBalance,
+		"dest_account_id":   updatedDest.AccountID,
+		"dest_balance":      updatedDest.CurrentBalance,
+	})
 }

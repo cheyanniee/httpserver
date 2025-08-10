@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"httpserver/handlers"
 	"httpserver/models"
@@ -125,7 +126,6 @@ func TestTransferCurrency_CommitError(t *testing.T) {
 	}
 }
 
-// Success: Valid request
 func TestTransactionHandler_Success(t *testing.T) {
 	mock := setupMockDB(t)
 
@@ -153,6 +153,16 @@ func TestTransactionHandler_Success(t *testing.T) {
 
 	mock.ExpectCommit()
 
+	// Expect updated source account
+	mock.ExpectQuery("SELECT balance FROM accounts WHERE account_id =").
+		WithArgs(1).
+		WillReturnRows(sqlmock.NewRows([]string{"balance"}).AddRow(80.0))
+
+	// Expect updated destination account
+	mock.ExpectQuery("SELECT balance FROM accounts WHERE account_id =").
+		WithArgs(2).
+		WillReturnRows(sqlmock.NewRows([]string{"balance"}).AddRow(70.0))
+
 	// Valid request
 	body := []byte(`{"source_account_id": 1, "destination_account_id": 2, "amount": "20.00"}`)
 	req := httptest.NewRequest(http.MethodPost, "/transfer", bytes.NewReader(body))
@@ -161,10 +171,23 @@ func TestTransactionHandler_Success(t *testing.T) {
 	handlers.TransactionHandler(w, req)
 
 	resp := w.Result()
+	defer resp.Body.Close()
 
-	// Expect empty response
-	if resp.StatusCode != http.StatusNoContent {
-		t.Errorf("expected 204, got %d", resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected 200, got %d", resp.StatusCode)
+	}
+
+	// Decode JSON response
+	var data map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		t.Fatalf("failed to decode JSON: %v", err)
+	}
+
+	if data["source_balance"] != 80.0 {
+		t.Errorf("expected source_balance=80.0, got %v", data["source_balance"])
+	}
+	if data["dest_balance"] != 70.0 {
+		t.Errorf("expected dest_balance=70.0, got %v", data["dest_balance"])
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {

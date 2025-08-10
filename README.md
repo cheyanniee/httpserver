@@ -97,7 +97,7 @@ Expected response is either an error or an empty response
 }
 ```
 **Response:**  
-Expected response is either an error or an empty response
+Expected response is either an error or the updated balances
 
 ---
 
