@@ -105,6 +105,8 @@ Expected response is either an error or an empty response
 
 1. All accounts use the same currency.
 2. No authentication/authorization is implemented.
+3. AccountIDs are all numbers 
+4. Balances are accurate up to 5 dp (can be altered if needed)
 
 ---
 
