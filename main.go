@@ -23,6 +23,7 @@ var config = models.Config{
 }
 
 func main() {
+	// Setup DB
 	connStr := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		config.DBHost, config.DBPort, config.DBUser, config.DBPassword, config.DBName,
@@ -52,6 +53,7 @@ func main() {
 		log.Fatalf("Failed to create accounts table: %v", err)
 	}
 
+	// Handler functions
 	http.HandleFunc("/accounts", handlers.CreateAccountHandler)
 	http.HandleFunc("/accounts/", handlers.GetAccountHandler)
 	http.HandleFunc("/transactions", handlers.TransactionHandler)
